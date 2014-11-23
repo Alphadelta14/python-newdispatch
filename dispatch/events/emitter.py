@@ -69,6 +69,41 @@ class Emitter(object):
         except (AttributeError, KeyError):
             raise ValueError('Callback not found')
 
+    def once(self, event, callback=None):
+        """Hook to an event once.
+
+        Parameters
+        ----------
+        event : str
+            Event to attach to
+        callback : func
+            Callback to call when event is fired. If not specified, this is
+            used as a decorator
+
+        Returns
+        -------
+        wrapper : func
+            A decorator if callback is not set
+        """
+
+        if callback is None:
+            def wrapper(func):
+                @functools.wraps(func)
+                def call_once(*args, **kwargs):
+                    ret = func(*args, **kwargs)
+                    self.off(event, call_once)
+                    return ret
+                self.on(event, call_once)
+                return func
+            return wrapper
+        else:
+            @functools.wraps(callback)
+            def call_once(*args, **kwargs):
+                ret = callback(*args, **kwargs)
+                self.off(event, call_once)
+                return ret
+            self.on(event, call_once)
+
     def fire(self, event):
         """Fires an event
 
