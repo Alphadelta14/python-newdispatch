@@ -104,6 +104,13 @@ class Emitter(object):
                 return ret
             self.on(event, call_once)
 
+    def all_off(self):
+        """Remove all events"""
+        try:
+            del self.event_handlers
+        except AttributeError:
+            pass
+
     def fire(self, event):
         """Fires an event
 
