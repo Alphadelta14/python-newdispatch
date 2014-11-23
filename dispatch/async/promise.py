@@ -119,3 +119,34 @@ class Promise(Emitter):
             if throw_error:
                 promise.error(new_promise.throw)
             promise.failure(new_promise.fail)
+
+    @staticmethod
+    def any(throw_error=False, *promises):
+        """Create a new promise that acts on the success of any of the
+        passed promises.
+
+        'success' is fired as soon as any promise succeeds. 'fail' is fired
+        if all of them fail. 'error' is thrown if throw_error is True and
+        and of them error.
+
+        Parameters
+        ----------
+        promise_1 ... promise_n : Promise
+            Promises to wait for
+        throw_error : Bool, optional
+            If False (default), this will continue until any promises are
+            complete before throwing its failure. Else throw immediately.
+        """
+        new_promise = Promise()
+        new_promise.remaining = len(promises)
+
+        def one_failed():
+            new_promise.remaining -= 1
+            if not new_promise.remaining:
+                new_promise.fail()
+
+        for promise in promises:
+            promise.success(new_promise.done)
+            if throw_error:
+                promise.error(new_promise.throw)
+            promise.failure(one_failed)
