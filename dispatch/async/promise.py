@@ -88,3 +88,34 @@ class Promise(Emitter):
             Callback to call. If not set, this will be a decorator.
         """
         return self.on('complete', callback)
+
+    @staticmethod
+    def all(throw_error=False, *promises):
+        """Create a new promise that acts on the completion of all
+        passed promises.
+
+        'success' is fired if all promises are successful. 'fail' is fired
+        as soon as any of them fail. 'error' is thrown if throw_error is True
+        and any of them error.
+
+        Parameters
+        ----------
+        promise_1 ... promise_n : Promise
+            Promises to wait for
+        throw_error : Bool, optional
+            If False (default), this will continue until all promises are
+            complete before throwing its failure. Else throw immediately.
+        """
+        new_promise = Promise()
+        new_promise.remaining = len(promises)
+
+        def one_finished():
+            new_promise.remaining -= 1
+            if not new_promise.remaining:
+                new_promise.done()
+
+        for promise in promises:
+            promise.complete(one_finished)
+            if throw_error:
+                promise.error(new_promise.throw)
+            promise.failure(new_promise.fail)
