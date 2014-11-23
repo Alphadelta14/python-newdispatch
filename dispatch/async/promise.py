@@ -136,6 +136,7 @@ class Promise(Emitter):
             promise.failure(new_promise.fail)
         if not promises:
             new_promise.done()
+        return new_promise
 
     @staticmethod
     def any(throw_error=False, *promises):
@@ -169,3 +170,4 @@ class Promise(Emitter):
             promise.failure(one_failed)
         if not promises:
             new_promise.done()
+        return new_promise
