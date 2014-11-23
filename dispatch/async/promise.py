@@ -119,6 +119,8 @@ class Promise(Emitter):
             if throw_error:
                 promise.error(new_promise.throw)
             promise.failure(new_promise.fail)
+        if not promises:
+            new_promise.done()
 
     @staticmethod
     def any(throw_error=False, *promises):
@@ -150,3 +152,5 @@ class Promise(Emitter):
             if throw_error:
                 promise.error(new_promise.throw)
             promise.failure(one_failed)
+        if not promises:
+            new_promise.done()
