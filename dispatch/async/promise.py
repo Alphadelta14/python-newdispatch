@@ -31,12 +31,21 @@ class Promise(Emitter):
 
         This will swallow the exception thrown.
 
+        'error', 'failure', and 'complete' events are fired.
+
         Parameters
         ----------
         err : Exception
             The exception to provide to this promise
         """
         self.done(False, err=err)
+
+    def fail(self):
+        """Fail this progress and call done without success
+
+        'failure' and 'complete' events are fired.
+        """
+        self.done(False)
 
     def success(self, callback=None):
         """Add a callback when this promise succeeds
