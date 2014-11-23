@@ -26,6 +26,18 @@ class Promise(Emitter):
         self.fire('complete')
         self.all_off()
 
+    def throw(self, err):
+        """Throw an exception and call off the success
+
+        This will swallow the exception thrown.
+
+        Parameters
+        ----------
+        err : Exception
+            The exception to provide to this promise
+        """
+        self.done(False, err=err)
+
     def success(self, callback=None):
         """Add a callback when this promise succeeds
 
