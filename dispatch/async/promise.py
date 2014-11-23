@@ -3,6 +3,8 @@ from dispatch.events import Emitter
 
 
 class Promise(Emitter):
+    finished = False
+
     def done(self, success=True, err=None):
         """Indicate that this promise is complete
 
@@ -25,6 +27,19 @@ class Promise(Emitter):
             self.fire('error')
         self.fire('complete')
         self.all_off()
+        self.finished = True
+
+    def on(self, event, callback=None):
+        """Hook a callback to an event
+
+        See Also
+        --------
+        Emitter.on
+        """
+        # Do not allow hooking after completion
+        if self.finished:
+            raise RuntimeError('Promise has already completed')
+        return super(Promise, self).on(event, callback)
 
     def throw(self, err):
         """Throw an exception and call off the success
