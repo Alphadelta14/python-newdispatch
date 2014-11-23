@@ -48,6 +48,27 @@ class Emitter(object):
         else:
             self.event_handlers[event].append(callback)
 
+    def off(self, event, callback):
+        """Remove callback from an event
+
+        Parameters
+        ----------
+        event : str
+            Event to remove from
+        callback : func
+            Callback to be removed from this event. Only the first instance
+            is removed
+
+        Raises
+        ------
+        ValueError
+            If the callback is not attached to this event
+        """
+        try:
+            self.event_handlers[event].remove(callback)
+        except (AttributeError, KeyError):
+            raise ValueError('Callback not found')
+
     def fire(self, event):
         """Fires an event
 
