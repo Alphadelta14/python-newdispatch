@@ -47,3 +47,19 @@ class Emitter(object):
             return wrapper
         else:
             self.event_handlers[event].append(callback)
+
+    def fire(self, event):
+        """Fires an event
+
+        Parameters
+        ----------
+        event : str
+            Event to fire
+        """
+        try:
+            callbacks = self.event_handlers[event]
+        except (KeyError, AttributeError):
+            pass
+        else:
+            for callback in callbacks:
+                callback()
