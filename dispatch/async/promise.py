@@ -105,7 +105,7 @@ class Promise(Emitter):
         return self.on('complete', callback)
 
     @staticmethod
-    def all(throw_error=False, *promises):
+    def all(*promises, **kwargs):
         """Create a new promise that acts on the completion of all
         passed promises.
 
@@ -131,7 +131,7 @@ class Promise(Emitter):
 
         for promise in promises:
             promise.complete(one_finished)
-            if throw_error:
+            if kwargs.get('throw_error', False):
                 promise.error(new_promise.throw)
             promise.failure(new_promise.fail)
         if not promises:
@@ -139,7 +139,7 @@ class Promise(Emitter):
         return new_promise
 
     @staticmethod
-    def any(throw_error=False, *promises):
+    def any(*promises, **kwargs):
         """Create a new promise that acts on the success of any of the
         passed promises.
 
@@ -165,7 +165,7 @@ class Promise(Emitter):
 
         for promise in promises:
             promise.success(new_promise.done)
-            if throw_error:
+            if kwargs.get('throw_error', False):
                 promise.error(new_promise.throw)
             promise.failure(one_failed)
         if not promises:
