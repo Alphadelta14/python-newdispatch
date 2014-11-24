@@ -2,4 +2,4 @@
 from dispatch.events import *
 from dispatch.async import *
 
-__all__ = ['Emitter', 'Promise']
+__all__ = ['Emitter', 'Event', 'Promise']
