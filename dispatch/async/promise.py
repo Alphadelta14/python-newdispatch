@@ -5,13 +5,15 @@ from dispatch.events import Emitter
 class Promise(Emitter):
     finished = False
 
-    def done(self, success=True, err=None):
+    def done(self, data=None, success=True, err=None):
         """Indicate that this promise is complete
 
         This will now trigger its completion functions
 
         Parameters
         ----------
+        data : object, optional
+            Object passed into each callbacks EventData.data
         success : Bool, optional
             If successful (default), run the success callbacks. Else, the
             failure callbacks.
@@ -20,12 +22,12 @@ class Promise(Emitter):
             get called with this
         """
         if success:
-            self.fire('success')
+            self.fire('success', data=data, cancellable=False)
         else:
-            self.fire('failure')
+            self.fire('failure', data=data, cancellable=False)
         if err is not None:
-            self.fire('error')
-        self.fire('complete')
+            self.fire('error', data=err, cancellable=False)
+        self.fire('complete', data=data, cancellable=False)
         self.all_off()
         self.finished = True
 
@@ -67,7 +69,7 @@ class Promise(Emitter):
 
         Parameters
         ----------
-        callback : function
+        callback : function(EventData)
             Callback to call. If not set, this will be a decorator.
         """
         return self.on('success', callback)
@@ -78,7 +80,7 @@ class Promise(Emitter):
 
         Parameters
         ----------
-        callback : function
+        callback : function(EventData)
             Callback to call. If not set, this will be a decorator.
         """
         return self.on('failure', callback)
@@ -88,7 +90,7 @@ class Promise(Emitter):
 
         Parameters
         ----------
-        callback : function
+        callback : function(EventData)
             Callback to call. If not set, this will be a decorator.
         """
         return self.on('error', callback)
@@ -99,7 +101,7 @@ class Promise(Emitter):
 
         Parameters
         ----------
-        callback : function
+        callback : function(EventData)
             Callback to call. If not set, this will be a decorator.
         """
         return self.on('complete', callback)
@@ -122,11 +124,15 @@ class Promise(Emitter):
             complete before throwing its failure. Else throw immediately.
         """
         new_promise = Promise()
-        new_promise.remaining = len(promises)
+        new_promise.waiting_for = promises[:]
 
-        def one_finished():
-            new_promise.remaining -= 1
-            if not new_promise.remaining:
+        @new_promise.complete
+        def cleanup(evt):
+            new_promise.waiting_for = None
+
+        def one_finished(evt):
+            new_promise.waiting_for.remove(evt.source)
+            if not new_promise.waiting_for:
                 new_promise.done()
 
         for promise in promises:
@@ -156,11 +162,15 @@ class Promise(Emitter):
             complete before throwing its failure. Else throw immediately.
         """
         new_promise = Promise()
-        new_promise.remaining = len(promises)
+        new_promise.waiting_for = promises[:]
 
-        def one_failed():
-            new_promise.remaining -= 1
-            if not new_promise.remaining:
+        @new_promise.complete
+        def cleanup(evt):
+            new_promise.waiting_for = None
+
+        def one_failed(evt):
+            new_promise.waiting_for.remove(evt.source)
+            if not new_promise.waiting_for:
                 new_promise.fail()
 
         for promise in promises:
