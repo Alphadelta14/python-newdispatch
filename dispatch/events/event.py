@@ -1,6 +1,6 @@
 
 
-class Event(object):
+class EventData(object):
     """Object passed into emitted events
 
     Attributes
