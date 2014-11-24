@@ -1,5 +1,6 @@
 
 import functools
+import sys
 
 from event import EventData
 
@@ -160,9 +161,9 @@ class Emitter(object):
                     callback(evt)
                 except Exception as err:
                     if catch_errors:
-                        evt.add_error(err)
+                        evt.add_error(sys.exc_info())
                     else:
                         raise err
         if late_throw and evt.errors:
-            raise evt.errors[0]
+            raise evt.errors[0][1], None, evt.errors[0][2]
         return evt

@@ -55,14 +55,14 @@ class Promise(Emitter):
         err : Exception
             The exception to provide to this promise
         """
-        self.done(False, err=err)
+        self.done(success=False, err=err)
 
-    def fail(self):
+    def fail(self, data=None):
         """Fail this progress and call done without success
 
         'failure' and 'complete' events are fired.
         """
-        self.done(False)
+        self.done(data, success=False)
 
     def success(self, callback=None):
         """Add a callback when this promise succeeds
@@ -124,14 +124,15 @@ class Promise(Emitter):
             complete before throwing its failure. Else throw immediately.
         """
         new_promise = Promise()
-        new_promise.waiting_for = promises[:]
+        new_promise.waiting_for = list(promises)
 
         @new_promise.complete
         def cleanup(evt):
             new_promise.waiting_for = None
 
         def one_finished(evt):
-            new_promise.waiting_for.remove(evt.source)
+            if new_promise.waiting_for:  # In case cleanup has been called
+                new_promise.waiting_for.remove(evt.source)
             if not new_promise.waiting_for:
                 new_promise.done()
 
@@ -162,14 +163,15 @@ class Promise(Emitter):
             complete before throwing its failure. Else throw immediately.
         """
         new_promise = Promise()
-        new_promise.waiting_for = promises[:]
+        new_promise.waiting_for = list(promises)
 
         @new_promise.complete
         def cleanup(evt):
             new_promise.waiting_for = None
 
         def one_failed(evt):
-            new_promise.waiting_for.remove(evt.source)
+            if new_promise.waiting_for:  # In case cleanup has been called
+                new_promise.waiting_for.remove(evt.source)
             if not new_promise.waiting_for:
                 new_promise.fail()
 

@@ -18,11 +18,11 @@ class TestPromise(unittest.TestCase):
         state = State()
 
         @promise.success
-        def success():
+        def success(evt):
             state.success += 1
 
         @promise.failure
-        def failure():
+        def failure(evt):
             state.failure += 1
         state.success = 0
         state.failure = 0
@@ -35,15 +35,15 @@ class TestPromise(unittest.TestCase):
         state = State()
 
         @promise.success
-        def success():
+        def success(evt):
             state.success += 1
 
         @promise.failure
-        def failure():
+        def failure(evt):
             state.failure += 1
         state.success = 0
         state.failure = 0
-        promise.done(False)
+        promise.fail()
         self.assertEqual(state.success, 0)
         self.assertEqual(state.failure, 1)
 
@@ -52,15 +52,15 @@ class TestPromise(unittest.TestCase):
         state = State()
 
         @promise.success
-        def success():
+        def success(evt):
             state.success += 1
 
         @promise.failure
-        def failure():
+        def failure(evt):
             state.failure += 1
 
         @promise.complete
-        def failure():
+        def complete(evt):
             state.complete += 1
         state.success = 0
         state.failure = 0
@@ -75,20 +75,20 @@ class TestPromise(unittest.TestCase):
         state = State()
 
         @promise.success
-        def success():
+        def success(evt):
             state.success += 1
 
         @promise.failure
-        def failure():
+        def failure(evt):
             state.failure += 1
 
         @promise.complete
-        def failure():
+        def complete(evt):
             state.complete += 1
         state.success = 0
         state.failure = 0
         state.complete = 0
-        promise.done(False)
+        promise.fail()
         self.assertEqual(state.success, 0)
         self.assertEqual(state.failure, 1)
         self.assertEqual(state.complete, 1)
@@ -98,15 +98,15 @@ class TestPromise(unittest.TestCase):
         state = State()
 
         @promise.success
-        def success():
+        def success(evt):
             state.success += 1
 
         @promise.failure
-        def failure():
+        def failure(evt):
             state.failure += 1
 
         @promise.complete
-        def failure():
+        def complete(evt):
             state.complete += 1
         state.success = 0
         state.failure = 0
@@ -128,7 +128,7 @@ class TestPromise(unittest.TestCase):
         promise = Promise()
         promise.done()
 
-        def success():
+        def success(evt):
             pass
 
         with self.assertRaises(RuntimeError):
@@ -138,15 +138,15 @@ class TestPromise(unittest.TestCase):
         promise1 = Promise()
         promise2 = Promise()
         promise = Promise.all(promise1, promise2)
-        self.assertEqual(promise.remaining, 2)
+        self.assertEqual(len(promise.waiting_for), 2)
         state = State()
 
         @promise.success
-        def success():
+        def success(evt):
             state.success += 1
 
         @promise.failure
-        def failure():
+        def failure(evt):
             state.failure += 1
         state.success = 0
         state.failure = 0
@@ -161,19 +161,19 @@ class TestPromise(unittest.TestCase):
         promise1 = Promise()
         promise2 = Promise()
         promise = Promise.all(promise1, promise2)
-        self.assertEqual(promise.remaining, 2)
+        self.assertEqual(len(promise.waiting_for), 2)
         state = State()
 
         @promise.success
-        def success():
+        def success(evt):
             state.success += 1
 
         @promise.failure
-        def failure():
+        def failure(evt):
             state.failure += 1
         state.success = 0
         state.failure = 0
-        promise1.done(False)
+        promise1.fail()
         self.assertEqual(state.success, 0)
         self.assertEqual(state.failure, 1)
         promise2.done()
@@ -184,15 +184,15 @@ class TestPromise(unittest.TestCase):
         promise1 = Promise()
         promise2 = Promise()
         promise = Promise.any(promise1, promise2)
-        self.assertEqual(promise.remaining, 2)
+        self.assertEqual(len(promise.waiting_for), 2)
         state = State()
 
         @promise.success
-        def success():
+        def success(evt):
             state.success += 1
 
         @promise.failure
-        def failure():
+        def failure(evt):
             state.failure += 1
         state.success = 0
         state.failure = 0
@@ -207,19 +207,19 @@ class TestPromise(unittest.TestCase):
         promise1 = Promise()
         promise2 = Promise()
         promise = Promise.any(promise1, promise2)
-        self.assertEqual(promise.remaining, 2)
+        self.assertEqual(len(promise.waiting_for), 2)
         state = State()
 
         @promise.success
-        def success():
+        def success(evt):
             state.success += 1
 
         @promise.failure
-        def failure():
+        def failure(evt):
             state.failure += 1
         state.success = 0
         state.failure = 0
-        promise1.done(False)
+        promise1.fail()
         self.assertEqual(state.success, 0)
         self.assertEqual(state.failure, 0)
         promise2.done()
@@ -230,21 +230,21 @@ class TestPromise(unittest.TestCase):
         promise1 = Promise()
         promise2 = Promise()
         promise = Promise.any(promise1, promise2)
-        self.assertEqual(promise.remaining, 2)
+        self.assertEqual(len(promise.waiting_for), 2)
         state = State()
 
         @promise.success
-        def success():
+        def success(evt):
             state.success += 1
 
         @promise.failure
-        def failure():
+        def failure(evt):
             state.failure += 1
         state.success = 0
         state.failure = 0
-        promise1.done(False)
+        promise1.fail()
         self.assertEqual(state.success, 0)
         self.assertEqual(state.failure, 0)
-        promise2.done(False)
+        promise2.fail()
         self.assertEqual(state.success, 0)
         self.assertEqual(state.failure, 1)
