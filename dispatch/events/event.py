@@ -14,6 +14,10 @@ class EventData(object):
     cancelled : bool
         Whether this event should continue to propagate.
         Use Event.cancel() to cancel an event
+    errors : list
+        List of exceptions this event has encountered
+    success : Bool
+        Whether this event has successfully executed
 
     Methods
     -------
@@ -26,8 +30,23 @@ class EventData(object):
         self.data = data
         self.cancelled = False
         self.cancellable = cancellable
+        self.errors = []
 
     def cancel(self):
         """Cancel this event if possible"""
         if self.cancellable:
             self.cancelled = True
+
+    def add_error(self, err):
+        """Adds an error to the list of errors this event came across
+
+        Parameters
+        ----------
+        err : Exception
+        """
+        self.errors.append(err)
+
+    @property
+    def success(self):
+        """Whether or not this event has successfully executed"""
+        return not self.cancelled and not self.errors
