@@ -136,10 +136,13 @@ class Promise(Emitter):
             if not new_promise.waiting_for:
                 new_promise.done()
 
+        def one_error(evt):
+            new_promise.throw(evt.data)
+
         for promise in promises:
             promise.complete(one_finished)
             if kwargs.get('throw_error', False):
-                promise.error(new_promise.throw)
+                promise.error(one_error)
             promise.failure(new_promise.fail)
         if not promises:
             new_promise.done()
@@ -175,10 +178,13 @@ class Promise(Emitter):
             if not new_promise.waiting_for:
                 new_promise.fail()
 
+        def one_error(evt):
+            new_promise.throw(evt.data)
+
         for promise in promises:
             promise.success(new_promise.done)
             if kwargs.get('throw_error', False):
-                promise.error(new_promise.throw)
+                promise.error(one_error)
             promise.failure(one_failed)
         if not promises:
             new_promise.done()
