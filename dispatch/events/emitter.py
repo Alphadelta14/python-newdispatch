@@ -45,7 +45,7 @@ class Emitter(object):
 
         if callback is None:
             def wrapper(func):
-                self.event_handlers[event].append(callback)
+                self.event_handlers[event].append(func)
                 return func
             return wrapper
         else:
