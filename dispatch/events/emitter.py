@@ -2,7 +2,7 @@
 import functools
 import sys
 
-from event import EventData, EventException, EventDeferred
+from event import EventData, EventCancelled, EventDeferred
 
 
 class Emitter(object):
@@ -162,6 +162,13 @@ class Emitter(object):
                         return evt
                     try:
                         callback(evt)
+                    except EventCancelled as cancel_exc:
+                        # Check to see if nested and actually called for this
+                        if cancel_exc.evt == evt:
+                            return evt
+                        else:
+                            # Raise until this event is caught
+                            raise
                     except EventDeferred:
                         deferred_callbacks.append(callback)
                     except Exception as err:

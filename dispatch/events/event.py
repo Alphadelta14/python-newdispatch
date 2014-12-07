@@ -4,6 +4,12 @@ class EventException(BaseException):
     pass
 
 
+class EventCancelled(EventException):
+    def __init__(self, evt):
+        EventException.__init__(self)
+        self.evt = evt
+
+
 class EventDeferred(EventException):
     pass
 
@@ -44,9 +50,13 @@ class EventData(object):
         self.deferred = False
 
     def cancel(self):
-        """Cancel this event if possible"""
+        """Cancel this event if possible
+
+        This halts the active callback
+        """
         if self.cancellable:
             self.cancelled = True
+        raise EventCancelled(self)
 
     def defer(self):
         """Call the current callback again later.
