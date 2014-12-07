@@ -1,5 +1,13 @@
 
 
+class EventException(BaseException):
+    pass
+
+
+class EventDeferred(EventException):
+    pass
+
+
 class EventData(object):
     """Object passed into emitted events
 
@@ -18,6 +26,8 @@ class EventData(object):
         List of exceptions this event has encountered
     success : Bool
         Whether this event has successfully executed
+    deferred : Bool
+        If True, this is the second time this function is called
 
     Methods
     -------
@@ -31,11 +41,35 @@ class EventData(object):
         self.cancelled = False
         self.cancellable = cancellable
         self.errors = []
+        self.deferred = False
 
     def cancel(self):
         """Cancel this event if possible"""
         if self.cancellable:
             self.cancelled = True
+
+    def defer(self):
+        """Call the current callback again later.
+
+        This will cause all lines before the defer to run again, so please
+        use at the start of the file.
+
+        Examples
+        --------
+        >>> emitter = Emitter()
+        >>> @emitter.on('some_event')
+            def my_func1(evt):
+                evt.defer()
+                print('Callback #1 called!')
+        >>> @emitter.on('some_event')
+            def my_func2(evt):
+                print('Callback #2 called!')
+        >>> emitter.fire('some_event')
+        Callback #2 called!
+        Callback #1 called!
+        """
+        if not self.deferred:
+            raise EventDeferred
 
     def add_error(self, err):
         """Adds an error to the list of errors this event came across

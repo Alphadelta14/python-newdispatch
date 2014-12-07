@@ -2,7 +2,7 @@
 import functools
 import sys
 
-from event import EventData
+from event import EventData, EventException, EventDeferred
 
 
 class Emitter(object):
@@ -154,16 +154,25 @@ class Emitter(object):
         except (KeyError, AttributeError):
             pass
         else:
-            for callback in callbacks:
-                if evt.cancelled:
-                    return evt
-                try:
-                    callback(evt)
-                except Exception as err:
-                    if catch_errors:
-                        evt.add_error(sys.exc_info())
-                    else:
-                        raise err
+            deferred_callbacks = []
+
+            def process_callbacks(callbacks):
+                for callback in callbacks[:]:
+                    if evt.cancelled:
+                        return evt
+                    try:
+                        callback(evt)
+                    except EventDeferred:
+                        deferred_callbacks.append(callback)
+                    except Exception as err:
+                        if catch_errors:
+                            evt.add_error(sys.exc_info())
+                        else:
+                            raise err
+            process_callbacks(callbacks)
+            if deferred_callbacks:
+                evt.deferred = True
+                process_callbacks(deferred_callbacks)
         if late_throw and evt.errors:
             raise evt.errors[0][1], None, evt.errors[0][2]
         return evt
